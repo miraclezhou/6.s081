@@ -23,6 +23,8 @@ struct {
   struct run *freelist;
 } kmem;
 
+uint page_amount=0;
+
 void
 kinit()
 {
@@ -60,6 +62,7 @@ kfree(void *pa)
   r->next = kmem.freelist;
   kmem.freelist = r;
   release(&kmem.lock);
+  page_amount++;
 }
 
 // Allocate one 4096-byte page of physical memory.
@@ -78,5 +81,13 @@ kalloc(void)
 
   if(r)
     memset((char*)r, 5, PGSIZE); // fill with junk
+
+  if(r!=0 && page_amount>0){
+    page_amount--;
+  }
   return (void*)r;
+}
+
+uint getFreemem(void){
+  return page_amount*PGSIZE;
 }
